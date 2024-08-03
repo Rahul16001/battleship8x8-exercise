@@ -16,12 +16,8 @@ public class Battleship8x8 {
         int index = (col) + 8*row;
 
         long shotBit = 1L << (63 - index);
-        shotBit = ships & shotBit;
-
-        if(shotBit == 0L) return false;
-
         shots|=shotBit;
-        return true;
+        return (ships & shotBit) != 0L;
 
     }
 
@@ -37,6 +33,7 @@ public class Battleship8x8 {
 
             boolean isShot = (shots & index) != 0L;
             boolean isShip = (ships & index) != 0L;
+            System.out.println(isShot +" "+isShip);
 
             if(isShot)
             {

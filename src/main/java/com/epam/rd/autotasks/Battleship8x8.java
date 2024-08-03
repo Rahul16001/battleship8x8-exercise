@@ -4,79 +4,53 @@ import java.util.List;
 
 public class Battleship8x8 {
     private final long ships;
-    String map;
-    char []resultMap;
-
-    String getMap(long ship)
-    {
-        StringBuilder str= new StringBuilder();
-
-        if(ship < 0)
-        {
-            ship = ~(-1*ship) + 1;
-        }
-
-        for(int i=0;i<64;i++)
-        {
-            int x = (int)(ship & 1);
-            str.append(x);
-            ship>>=1;
-        }
-        str.reverse();
-        return str.toString();
-    }
+    private long shots = 0L;
 
     public Battleship8x8(final long ships) {
         this.ships = ships;
-        this.map = getMap(ships);
-        this.resultMap = new char[64];
-
-        for(int i=0;i<64;i++)
-        {
-            if(map.charAt(i) == '1') resultMap[i] = '1';
-            else resultMap[i] = '0';
-        }
     }
 
     public boolean shoot(String shot) {
-        int decodeChar = (int)(shot.charAt(0) - 'A');
-        int decodeNum = (int)(shot.charAt(1) - '1');
-        int index = (decodeChar) + 8*decodeNum;
+        int col = shot.charAt(0) - 'A';
+        int row = shot.charAt(1) - '1';
+        int index = (col) + 8*row;
 
-        if(map.charAt(index) == '1')
-        {
-            resultMap[index] = '☒';
-            return true;
-        }
-        else
-        {
-            resultMap[index] = '×';
-        }
-        return false;
+        long shotBit = 1L << (63 - index);
+        shotBit = ships & shotBit;
+
+        if(shotBit == 0L) return false;
+
+        shots|=shotBit;
+        return true;
+
     }
 
     public String state() {
 
-        StringBuilder mapState = new StringBuilder();
-        for(int i=0;i<64;i++)
-        {
-            if(resultMap[i] == '1')
-            {
-                resultMap[i] = '☐';
-            }
-            else if(resultMap[i] == '0')
-            {
-                resultMap[i] = '.';
-            }
-        }
+        StringBuilder res = new StringBuilder();
 
-        for(int i=0;i<64;i++)
+        for(int i = 0 ;i < 64; i++)
         {
-            if(i != 0 && i % 8 == 0) mapState.append("\n");
-            mapState.append(resultMap[i]);
-        }
+            if(i > 0 && i % 8 == 0) res.append("\n");
 
-        return mapState.toString();
+            long index = 1L << (63- i);
+
+            boolean isShot = (shots & index) != 0L;
+            boolean isShip = (ships & index) != 0L;
+
+            if(isShot)
+            {
+                if(isShip) res.append('☒');
+                else res.append('×');
+            }
+            else
+            {
+                if(isShip) res.append('☐');
+                else res.append('.');
+            }
+
+        }
+        return res.toString();
     }
 
     public static void main(String[] args) {
@@ -88,9 +62,7 @@ public class Battleship8x8 {
         {
             obj.shoot(x);
         }
-
-        String res = obj.state();
-        System.out.println(res);
+        System.out.println(obj.state());
 
     }
 }
